@@ -14,4 +14,4 @@ INSTALLATION:
 
 To install you have to drop it into your server, then you go into your characters database for ox-core
 
-once in your characters database add a new collumn named *bank* in all lowercase and it should work
+once in your characters database add a new INT type collumn named *bank* in all lowercase and it should work
