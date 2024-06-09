@@ -1,5 +1,4 @@
-Simple banking script for [ox_core](https://github.com/overextended/ox_core) with support for [qtarget](https://github.com/QuantusRP/qtarget).  
-For the ESX version, go to the [main](https://github.com/antond15/orp_banking/tree/main) branch.
+Simple banking script for [ox_core](https://github.com/overextended/ox_core)
 
 ### Features
 - Access every ATM and bank
@@ -9,4 +8,3 @@ For the ESX version, go to the [main](https://github.com/antond15/orp_banking/tr
 ### Dependencies
 - [ox_core](https://github.com/overextended/ox_core)
 - [ox_lib](https://github.com/overextended/ox_lib)
-- [qtarget](https://github.com/QuantusRP/qtarget)
