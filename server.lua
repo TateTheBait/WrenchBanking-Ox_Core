@@ -7,19 +7,33 @@ chunk()
 
 local getbank = function (src)
 	local charid = Ox.GetPlayer(src).charId
-	local currentbank = MySQL.query.await('SELECT `bank` FROM `characters` WHERE `charid` = ?', {
+	local accid = MySQL.query.await('SELECT `accountId` FROM `accounts_access` WHERE `charId` = ?', {
 		charid
 	})
-	
-	return currentbank[1]["bank"]
+
+	local currentbank = MySQL.query.await('SELECT `balance` FROM `accounts` WHERE `id` = ?', {
+		accid[1]["accountId"]
+	})
+	return currentbank[1]["balance"]
 end
 
+local getaccid = function(src)
+	local charid =  Ox.GetPlayer(src).charId
+	local id = MySQL.query.await('SELECT `accountId` FROM `accounts_access` WHERE `charId` = ?', {
+		charid
+	})
+	return id[1]["accountId"]
+end
+
+
+
 local deposit = function(src, amt)
-	local charid = Ox.GetPlayer(src).charId
 	if exports.ox_inventory:GetItemCount(src, "cash") >= amt and amt >= 1 then
 		local currentbank = getbank(src)
-		MySQL.update.await('UPDATE characters SET bank = ? WHERE charId = ?', {
-			currentbank + amt, charid
+		local accid = getaccid(src)
+		
+		MySQL.update.await('UPDATE accounts SET balance = ? WHERE id = ?', {
+			currentbank + amt, accid
 		})
 		exports.ox_inventory:RemoveItem(src, "cash", amt)
 		TriggerClientEvent('ox_lib:notify', src, {
@@ -35,11 +49,11 @@ local deposit = function(src, amt)
 end
 
 local withdraw = function(src, amt)
-	local charid = Ox.GetPlayer(src).charId
+	local accid = getaccid(src)
 	local currentbank = getbank(src)
 	if currentbank >= amt and amt >= 1 then
-		MySQL.update.await('UPDATE characters SET bank = ? WHERE charId = ?', {
-			currentbank - amt, charid
+		MySQL.update.await('UPDATE accounts SET balance = ? WHERE id = ?', {
+			currentbank - amt, accid
 		})
 		exports.ox_inventory:AddItem(src, "cash", amt)
 		TriggerClientEvent('ox_lib:notify', src, {
@@ -57,11 +71,9 @@ end
 
 
 local transfer = function (src, target, amt)
-	local charid = Ox.GetPlayer(src).charId
-	local targid = Ox.GetPlayer(target)
-
-
-	if targid and charid then
+	local accid = getaccid(src)
+	local taccid = getaccid(target)
+	if accid and taccid then
 		if not amt or amt <= 0 then
 			TriggerClientEvent('ox_lib:notify', src, {
 				type = 'error',
@@ -74,14 +86,14 @@ local transfer = function (src, target, amt)
 			})
 		end
 		local currentbank = getbank(src)
-		local otherbank = getbank(targid)
+		local otherbank = getbank(target)
 
 		if amt <= currentbank then
-			MySQL.update.await('UPDATE characters SET bank = ? WHERE charId = ?', {
-				otherbank + amt, targid
+			MySQL.update.await('UPDATE accounts SET balance = ? WHERE id = ?', {
+				otherbank + amt, taccid
 			})
-			MySQL.update.await('UPDATE characters SET bank = ? WHERE charId = ?', {
-				currentbank - amt, charid
+			MySQL.update.await('UPDATE accounts SET balance = ? WHERE id = ?', {
+				currentbank - amt, accid
 			})
 			TriggerClientEvent('ox_lib:notify', src, {
 				type = 'success',
